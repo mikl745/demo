@@ -1,4 +1,5 @@
 package com.example.demo;
+import com.sun.scenario.effect.impl.prism.ps.PPSBlend_ADDPeer;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,34 +11,60 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import java.util.*;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 @Controller
 @RestController
 public class ApiController{
-    private List<String> messages = new ArrayList<>();
-    @GetMapping("messages")
-    public List<String> getMessages() {
-        return messages;
+    private final List<User> users = new ArrayList<>();
+
+    @GetMapping("users")
+    public List<String> getUsers() {
+        List<String> s = new ArrayList<>();
+        for (User user : users) s.add(user.toString());
+        return s;
     }
-    /* curl -X POST http://localhost:8080/messages -H 'Content-Type: text/plain' -d ...*/
-    @PostMapping("messages")
-    public void addMessage(@RequestBody String text) {
-        messages.add(text);
+    /* curl -X POST http://localhost:8080/messages -H 'Content-Type: text/plain' -d ... */
+    @PostMapping("users")
+    public void addUser(@RequestBody User user) {
+        users.add(user);
     }
 
-    /* curl -X GET http://localhost:8080/messages/index */
+    // на вход в формате json user
+    @PutMapping("users/{index}")
+    public void updateUser(@PathVariable("index") Integer i, @RequestBody User user)
+    {
+        users.get(i).setAge(user.getAge());
+    }
+
+    @GetMapping("users/{index}")
+    public String Get(@PathVariable("index") Integer i)
+    {
+        return users.get(i).toString();
+    }
+
+    @DeleteMapping("users/{index}")
+    public int Del(@PathVariable("index") Integer i)
+    {
+        users.remove(users.get(i));
+        return users.size();
+    }
+
+
+
+    /* curl -X GET http://localhost:8080/messages/index
     @GetMapping("messages/{index}")
     public String getMessage(@PathVariable("index") Integer index) {
         return messages.get(index);
     }
-    /* curl -X GET http://localhost:8080/messages/index */
+    /* curl -X GET http://localhost:8080/messages/index
     @DeleteMapping("messages/{index}")
     public void deleteText(@PathVariable("index") Integer index) {
         messages.remove((int) index);
     }
 
-    /* curl -X PUT http://localhost:8080/messages -H 'Content-Type: text/plain' -d ...*/
+    /* curl -X PUT http://localhost:8080/messages -H 'Content-Type: text/plain' -d ...
     @PutMapping("messages/{index}")
     public void updateMessage(
             @PathVariable("index") Integer i,
@@ -72,4 +99,6 @@ public class ApiController{
                 messages_.add(messages.get(i));
         messages = messages_;
     }
+
+    */
 }
