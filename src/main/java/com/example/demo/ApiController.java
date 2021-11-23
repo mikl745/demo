@@ -1,6 +1,4 @@
 package com.example.demo;
-import com.sun.scenario.effect.impl.prism.ps.PPSBlend_ADDPeer;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -9,47 +7,112 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+
 import java.util.*;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 @Controller
 @RestController
-public class ApiController{
-    private final List<User> users = new ArrayList<>();
+public class ApiController {
+    Map<String, ArrayList<Comment>> themes = new HashMap<String, ArrayList<Comment>>();
 
-    @GetMapping("users")
-    public List<String> getUsers() {
-        List<String> s = new ArrayList<>();
-        for (User user : users) s.add(user.toString());
-        return s;
-    }
-    /* curl -X POST http://localhost:8080/messages -H 'Content-Type: text/plain' -d ... */
-    @PostMapping("users")
-    public void addUser(@RequestBody User user) {
-        users.add(user);
+
+    @GetMapping("themes")
+    public List<String> getTheme() {
+        return new ArrayList<>(themes.keySet());
     }
 
-    // на вход в формате json user
-    @PutMapping("users/{index}")
-    public void updateUser(@PathVariable("index") Integer i, @RequestBody User user)
+    @PostMapping("themes")
+    public void addTheme(@RequestBody String name) {
+        themes.put(name, new ArrayList<Comment>());
+    }
+
+    @PutMapping("themes/{name}")
+    public void updateUser(@PathVariable("name") String name, @RequestBody String new_name) {
+        themes.put(new_name, new ArrayList<Comment>());
+        themes.remove(name);
+    }
+
+    @DeleteMapping("themes/{name}")
+    public void DelTheme(@PathVariable("name") String name)
     {
-        users.get(i).setAge(user.getAge());
+        themes.remove(name);
     }
 
-    @GetMapping("users/{index}")
-    public String Get(@PathVariable("index") Integer i)
+    @GetMapping("themes/size")
+    public Integer getThemeSize() {
+        return themes.size();
+    }
+
+    @DeleteMapping("themes/all")
+    public void DelAllTheme()
     {
-        return users.get(i).toString();
+        themes.clear();
     }
 
-    @DeleteMapping("users/{index}")
-    public int Del(@PathVariable("index") Integer i)
+    @GetMapping("themes/{name}")
+    public String getThemeToName(@PathVariable("name") String name) {
+        StringBuilder ans = new StringBuilder();
+        for (Comment comment : themes.get(name))
+            ans.append(comment).append(" ");
+
+        return ans.toString();
+    }
+
+    @PostMapping("themes/{name}/{user}")
+    public void addComment(@PathVariable("name") String name, @PathVariable("user") String user, @RequestBody String text) {
+        themes.get(name).add(new Comment(text, user));
+    }
+
+    @DeleteMapping("themes/{name}/{text}")
+    public void DelCommentInTheme(@PathVariable("name") String name, @PathVariable("text") String text)
+    {
+        themes.get(name).removeIf(comment -> Objects.equals(comment.getText(), text));
+    }
+
+    @PutMapping("themes/{name}/{text}")
+    public void updateComment(@PathVariable("name") String name, @PathVariable("text") String text, @RequestBody String new_text) {
+        for (Comment comment : themes.get(name))
+        {
+            if (Objects.equals(comment.getText(), text))
+            {
+                comment.setText(new_text);
+                break;
+            }
+        }
+    }
+
+    @GetMapping("themes/comments/{user}")
+    public ArrayList<String> getCommentsToName(@PathVariable("user") String user) {
+        ArrayList<String> ans = new ArrayList<String>();
+        for (String name : themes.keySet())
+        {
+            for (Comment comment : themes.get(name))
+            {
+                if (Objects.equals(comment.getUser(), user))
+                {
+                    ans.add(comment.getText());
+                }
+            }
+        }
+        return ans;
+    }
+
+    @DeleteMapping("themes/comments/{user}")
+    public void DelCommentsToName(@PathVariable("user") String user)
+    {
+        for (String name : themes.keySet())
+            themes.get(name).removeIf(comment -> Objects.equals(comment.getUser(), user));
+    }
+
+
+
+
+
+    //@DeleteMapping("users/{index}")
+    /*public void Del(@PathVariable("index") Integer i)
     {
         users.remove(users.get(i));
-        return users.size();
-    }
+    }*/
 
 
 
